@@ -1423,7 +1423,22 @@ func (ctxt *Link) hostlink() {
 			argv = append(argv, "-Wl,-S") // suppress STAB (symbolic debugging) symbols
 		}
 	case objabi.Hopenbsd:
-		argv = append(argv, "-Wl,-nopie")
+		foundNopieArg := false
+	nopie:
+		for _, nopie := range []string{"-Wl,-nopie", "-Wl,-no-pie", "-Wl,--no-pie"} {
+			if linkerFlagSupported(ctxt.Arch, argv[0], "", nopie) {
+				ctxt.Logf("Success! %s\n", nopie)
+				argv = append(argv, nopie)
+				foundNopieArg = true
+				break nopie
+			}
+		}
+		// If we weren't able to find the correct argument for this toolchain, abort.
+		// Removed when pie support is added. See issue 59866
+		if !foundNopieArg {
+			Exitf("The external toolchain does not appear to support the nopie argument. " +
+				"This is required for OpenBSD.")
+		}
 		argv = append(argv, "-pthread")
 		if ctxt.Arch.InFamily(sys.ARM64) {
 			// Disable execute-only on openbsd/arm64 - the Go arm64 assembler
