@@ -1427,7 +1427,6 @@ func (ctxt *Link) hostlink() {
 	nopie:
 		for _, nopie := range []string{"-Wl,-nopie", "-Wl,-no-pie", "-Wl,--no-pie"} {
 			if linkerFlagSupported(ctxt.Arch, argv[0], "", nopie) {
-				ctxt.Logf("Success! %s\n", nopie)
 				argv = append(argv, nopie)
 				foundNopieArg = true
 				break nopie
